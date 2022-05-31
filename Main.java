@@ -1,95 +1,49 @@
 class Main {
   public static void main(String[] args) {
-    BstNode a = new BstNode(-2147483648);
-    BstNode b = new BstNode(-2147483648);
-    //BstNode c = new BstNode(1);
-    
-    System.out.println(a.printTree());
-    System.out.println();
-    System.out.println(a);
-    System.out.println(b);
-    //System.out.println(c);
 
-    System.out.println(BstNode.checkBalancedBinaryTree(a));
-  }
-}
-
-class BstNode {
-  public long val;
-  public BstNode left;
-  public BstNode right;
-
-  public BstNode(int val) {
-    this.val = val;
-    this.left = null;
-    this.right = null;
-  }
-
-  public BstNode(int val, BstNode Left, BstNode Right) {
-    this.val = val;
-    this.left = Left;
-    this.right = Right;
-  }
-
-  public String printTree(){
-    StringBuilder sb = new StringBuilder();
-    if (this.left != null) {
-      sb.append(this.left.printTree());
-    } else {
-      sb.append("[N ");
-    }
-    
-    sb.append("(" + this.val + ")");
-    
-    if (this.Right != null) {
-      sb.append(this.Right.printTree());
-    }
-    else {
-      sb.append(" N]");
-    }
-
-    return sb.toString();
-  }
-  
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("BST Node\n");
-    sb.append("Value = " + this.val + "\n");
-    if (this.left != null) {
-      sb.append("Immeditate Left = " + this.left.val + "\n");
-    }
-    else {
-      sb.append("Nothing on left side\n");
-    }
-    if (this.right != null) {
-      sb.append("Immeditate Right = " + this.right.val + "\n");
-    }
-    else {
-      sb.append("Nothing on right side\n");
-    }
-    return sb.toString();
+    System.out.println(maxSubArray(new int[] {5, 4, -1, 7, 8}));
   }
 
 
-  // LC Validate Binary Tree 
-  public static boolean checkBalancedBinaryTree(BstNode tree) {
-    if (tree == null) return true;
-    return tree.isBalancedTree(tree, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    public static int maxSubArray(int[] nums) {
+      int start = 0;
+      int size = 1;
+      
+      int sum = nums[0];
+      int localsum = sum;
+
+      System.out.println(nums[0]);
+      for (int i = 1; i < nums.length; i++) {
+        System.out.println(nums[i] + " " + sum + " " + localsum +  " " + nums[start] + " " + size);
+
+        if (nums[i] > nums[start] || nums[i] >= 0) {
+          System.out.println("add");
+          localsum += nums[i];
+          size ++;
+        } else {
+          System.out.println("break");
+          for (int j = start; j < i; j++) {
+            if (nums[j] < 0) {
+              localsum -= nums[j];
+              break;
+            }
+          }
+
+          if (localsum > sum) {
+            sum = localsum;
+          }
+
+          localsum = nums[i];
+          size = 1;          
+          start = i;
+        }
+
+      }
+
+      if (localsum > sum) {
+        sum = localsum;
+      }
+      
+      return sum;
   }
-
-  // return true if this binary tree is a balanced binary tree
-  public boolean isBalancedTree(BstNode root, long min, long max){
-    // root nodes are always balanced, but check for root value against endpoint
-    if (root.left == null && root.right == null) {
-      return (root.val >= min && root.val <= max);
-    }
-
-    // check middle, left side, then check right
-    return 
-      (root.val >= min && root.val <= max) &&
-       (root.left == null || isBalancedTree(root.left, min, ((long)root.val - 1L))) &&
-       (root.right == null || isBalancedTree(root.right, ((long)root.val + 1L), max));
-  }
-
-  
 }
