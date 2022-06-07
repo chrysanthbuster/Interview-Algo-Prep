@@ -1,49 +1,216 @@
+import java.util.Arrays;
+
 class Main {
   public static void main(String[] args) {
 
-    System.out.println(maxSubArray(new int[] {5, 4, -1, 7, 8}));
+    int[] nums = new int[] { -2,1,-3,4,-1,2,1,-5,4 };
+    int[] numshort = new int[] { 1, 2, 3, 4 };
+    int[] somenums = new int[] { 9, -6, 10 };
+
+    System.out.println(maxSubArrayLinear(nums));
+    System.out.println(maxSubArrayDivide(nums));
   }
 
+  // assert at least one value in the array
+  public static int maxSubArray(int[] nums) {
+    return maxSubArrayHelper(nums, 0, nums.length);
+  }
 
-    public static int maxSubArray(int[] nums) {
-      int start = 0;
-      int size = 1;
-      
-      int sum = nums[0];
-      int localsum = sum;
+  public static int maxSubArrayHelper(int[] nums, int start, int end) {
+    if (start == end) {
+      // sum of 1 number is the number itself
+      return nums[start];
+    }
 
-      System.out.println(nums[0]);
-      for (int i = 1; i < nums.length; i++) {
-        System.out.println(nums[i] + " " + sum + " " + localsum +  " " + nums[start] + " " + size);
+    // minimum integer
+    int maxSum = Integer.MIN_VALUE;
 
-        if (nums[i] > nums[start] || nums[i] >= 0) {
-          System.out.println("add");
-          localsum += nums[i];
-          size ++;
-        } else {
-          System.out.println("break");
-          for (int j = start; j < i; j++) {
-            if (nums[j] < 0) {
-              localsum -= nums[j];
-              break;
-            }
-          }
+    int mid = start + (start + end) / 2;
+    System.out.println(mid);
+    printArray(nums, start, mid);
+    printArray(nums, mid, end);
 
-          if (localsum > sum) {
-            sum = localsum;
-          }
+    // int leftSum = maxSubArrayHelper(nums, start, mid);
+    // int rightSum = maxSubArrayHelper(nums, mid, end);
 
-          localsum = nums[i];
-          size = 1;          
-          start = i;
-        }
+    // System.out.println(leftSum + " " + rightSum + " " + (leftSum + rightSum));
+    // System.out.println("-------------");
 
+    // maxSum = Math.max(leftSum, maxSum);
+    // maxSum = Math.max(rightSum, maxSum);
+    // maxSum = Math.max(nums[mid] + nums[mid-1], maxSum);
+
+    return maxSum;
+  }
+
+  // print array helper
+  public static void printArray(int[] nums) {
+    System.out.println(Arrays.toString(nums));
+  }
+
+  // print array range helper
+  public static void printArray(int[] nums, int fromIndex, int toIndex) {
+    for (int i = fromIndex; i < toIndex; i++) {
+      System.out.print(nums[i] + " ");
+    }
+
+    System.out.println();
+  }
+
+  /**
+   * split array helper
+   * 
+   * @return array with all nums[start] to nums[end] not including end
+   */
+  public static int[] splitArray(int[] nums, int start, int end) {
+    int[] split = new int[end - start];
+
+    for (int i = start; i < end; i++) {
+      split[i - start] = nums[i];
+    }
+
+    return split;
+  }
+
+  // append two array together, no merging
+  public static int[] appendArray(int[] numsLeft, int[] numsRight) {
+    int[] result = new int[numsLeft.length + numsRight.length];
+
+    for (int i = 0; i < numsLeft.length; i++) {
+      result[i] = numsLeft[i];
+    }
+
+    for (int i = numsLeft.length; i < result.length; i++) {
+      result[i] = numsRight[i - numsLeft.length];
+    }
+
+    return result;
+  }
+
+  // assert at least one positive value in the array
+  public static int maxSubArrayLinear(int[] nums) {
+    int max = nums[0];
+    int curmax = 0;
+    for (int i = 0; i < nums.length; i++) {
+      curmax += nums[i];
+
+      // break the chain and restart
+      if (curmax < 0) {
+        curmax = 0;
+      } else {
+        max = Math.max(max, curmax);
       }
+    }
 
-      if (localsum > sum) {
-        sum = localsum;
-      }
-      
-      return sum;
+    return max;
+  }
+
+  // using divide and merge (with array spliting)
+  public static int maxSubArrayDivide(int[] nums) {
+    if (nums.length == 0) {
+      return Integer.MIN_VALUE;
+    }
+
+    if (nums.length == 1) {
+      return nums[0];
+    }
+
+    int maxSum = Integer.MIN_VALUE;
+
+    int middle = nums.length / 2;
+
+    int bestLeftSum = maxSubArrayDivide(splitArray(nums, 0, middle));
+    int bestRightSum = maxSubArrayDivide(splitArray(nums, middle, nums.length));
+    int bestMergedSum = maxMergedSum(middle, nums);
+
+    System.out.println("left=" + bestLeftSum + " right=" + bestRightSum + " merge=" + bestMergedSum);
+
+    return Math.max(bestMergedSum, Math.max(bestLeftSum, bestRightSum));
+  }
+
+  // get best sum with the the index included
+  public static int maxMergedSum(int index, int[] nums) {
+    printArray(nums);
+    System.out.println(nums[index]);
+    
+    int leftSum = Integer.MIN_VALUE;
+    int rightSum = Integer.MIN_VALUE;
+    int curSum = 0;
+
+    for (int i = index; i >= 0; i--) {
+      curSum += nums[i];
+      leftSum = Math.max(curSum, leftSum);
+    }
+
+    curSum = 0;
+
+    for (int i = index; i < nums.length; i++) {
+      curSum += nums[i];
+      rightSum = Math.max(curSum, rightSum);
+    }
+
+    return leftSum + rightSum - nums[index];
+  }
+
+  public static int maxSubArrayDivideIndex(int[] nums) {
+    return maxSubArrayDivideIndex(nums, 0, nums.length);
+  }
+
+  public static int maxSubArrayDivideIndex(int[] nums, int start, int end) {
+
+    if (start == end) {
+      return Integer.MIN_VALUE;
+    }
+
+    if (start + 1 == end) {
+      return nums[start];
+    }
+
+    int middle = start + (end - start) / 2;
+
+    int bestLeftSum = maxSubArrayDivideIndex(nums, start, middle);
+    int bestRightSum = maxSubArrayDivideIndex(nums, middle + 1, end);
+    
+    int bestMergedSum = maxMergedSumIndex(middle, nums, start, end);
+
+    return Math.max(bestMergedSum, Math.max(bestLeftSum, bestRightSum));
+  }
+
+  // get best sum with the the index included
+  public static int maxMergedSumIndex(int index, int[] nums, int start, int end) {    
+    int leftSum = Integer.MIN_VALUE;
+    int rightSum = Integer.MIN_VALUE;
+    int curSum = nums[index];
+
+    for (int i = index - 1; i >= start; i--) {
+      curSum += nums[i];
+      leftSum = Math.max(curSum, leftSum);
+    }
+
+    curSum = nums[index];
+
+    for (int i = index + 1; i < end; i++) {
+      curSum += nums[i];
+      rightSum = Math.max(curSum, rightSum);
+    }
+
+    return leftSum + rightSum - nums[index];
+  }
+
+  public static void printArrayLikeBinaryTree(int[] nums) {
+    printArrayLikeBinaryTree(nums, 0, nums.length);
+    System.out.println();
+  }
+
+  public static void printArrayLikeBinaryTree(int[] nums, int start, int end) {
+    if (start + 1 == end) {
+      System.out.print(nums[start] + ", ");
+      return;
+    }
+
+    int middle = start + (end - start) / 2;
+
+    printArrayLikeBinaryTree(nums, start, middle);
+    printArrayLikeBinaryTree(nums, middle, end);
   }
 }
